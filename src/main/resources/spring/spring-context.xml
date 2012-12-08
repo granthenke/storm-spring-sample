@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:c="http://www.springframework.org/schema/c"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
+        http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.5.xsd">
+
+    <!-- Topology Submission -->
+    <bean id="exclamationTopologySubmission" class="storm.contrib.spring.topology.SingleTopologySubmission" c:topologyId="exclamationTopology" c:stormTopology-ref="exclamationTopology" p:config-ref="config"/>
+
+    <!-- Topology Config -->
+    <bean id="config" class="backtype.storm.Config" p:debug="false"/>
+
+     <!-- Assembled Topologies -->
+    <bean id="exclamationTopology" class="storm.contrib.spring.topology.TopologyFactory" c:spout-ref="topologySpouts" c:bolt-ref="topologyBolts"/>
+    <util:list id="topologySpouts">
+        <bean id="wordSpout" class="storm.contrib.spring.topology.component.spout.RichSpout" c:componentId="word" c:stormSpout-ref="testWordSpoutImpl" p:parallelismHint="10"/>
+    </util:list>
+    <util:list id="topologyBolts">
+        <bean id="exclamationBolt1" class="storm.contrib.spring.topology.component.bolt.RichBolt" c:componentId="exclaim1" c:stormBolt-ref="exclamationBoltImpl" p:boltGroupings-ref="exclamationGrouping1" p:parallelismHint="3"/>
+        <bean id="exclamationBolt2" class="storm.contrib.spring.topology.component.bolt.RichBolt" c:componentId="exclaim2" c:stormBolt-ref="exclamationBoltImpl" p:boltGroupings-ref="exclamationGrouping2" p:parallelismHint="2"/>
+    </util:list>
+
+    <!-- Grouping For Each Bolt -->
+    <bean id="exclamationGrouping1" class="storm.contrib.spring.topology.component.grouping.ShuffleBoltGrouping" c:componentId="word"/>
+    <bean id="exclamationGrouping2" class="storm.contrib.spring.topology.component.grouping.ShuffleBoltGrouping" c:componentId="exclaim1"/>
+
+    <!-- Bolt And RichSpout Implementations -->
+    <bean id="testWordSpoutImpl" class="backtype.storm.testing.TestWordSpout"/>
+    <bean id="exclamationBoltImpl" class="storm.sample.bolt.ExclamationBolt"/>
+
+</beans>
